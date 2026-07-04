@@ -35,8 +35,14 @@
 
   const player = document.getElementById("player");
   const status = document.getElementById("status");
-  // Drive direct-stream endpoint (file must be shared: anyone with link).
-  player.src = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`;
+  // Drive direct-stream endpoints (file must be shared: anyone with link).
+  // Try newest endpoint first (byte-range support = reliable seeking), then legacy.
+  const sources = [
+    `https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=download`,
+    `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
+  ];
+  let srcIdx = 0;
+  player.src = sources[srcIdx];
 
   let seeked = false;
   const seek = () => {
@@ -53,6 +59,13 @@
   player.addEventListener("play", seek);
   player.addEventListener("playing", seek);
   player.addEventListener("error", () => {
+    srcIdx += 1;
+    if (srcIdx < sources.length) {          // try next streaming endpoint
+      seeked = false;
+      player.src = sources[srcIdx];
+      player.load();
+      return;
+    }
     status.innerHTML = "Could not stream directly (sharing off or Drive blocked it).<br>" +
       `Open in <a href="https://drive.google.com/file/d/${encodeURIComponent(id)}/view" target="_blank">Google Drive</a>` +
       ` and seek to <b>${fmt(t)}</b> manually.`;
