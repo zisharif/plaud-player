@@ -35,9 +35,12 @@
 
   const player = document.getElementById("player");
   const status = document.getElementById("status");
-  // Drive direct-stream endpoints (file must be shared: anyone with link).
-  // Try newest endpoint first (byte-range support = reliable seeking), then legacy.
+  // Drive API media endpoint — the browser-sanctioned streaming route (CORS + ranges).
+  // Key is referrer-restricted to this site + Drive API only. Legacy endpoints kept
+  // as fallbacks (they 403 in browsers due to hotlink protection, but harmless to try).
+  const KEY = "AIzaSyCNoFa8z2RcD-qkC5O9pemQ4cZAE7h1IPI";
   const sources = [
+    `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media&key=${KEY}`,
     `https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=download`,
     `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
   ];
