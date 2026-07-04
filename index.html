@@ -61,18 +61,24 @@
   // iOS Safari: seeks before user-initiated playback are often ignored — re-apply.
   player.addEventListener("play", seek);
   player.addEventListener("playing", seek);
+  const VERSION = "v3-apikey";
+  const errors = [];
   player.addEventListener("error", () => {
+    const me = player.error;
+    errors.push(`src${srcIdx + 1}: code=${me ? me.code : "?"}`);
     srcIdx += 1;
     if (srcIdx < sources.length) {          // try next streaming endpoint
       seeked = false;
+      status.textContent = `${VERSION} — trying source ${srcIdx + 1}/${sources.length}…`;
       player.src = sources[srcIdx];
       player.load();
       return;
     }
-    status.innerHTML = "Could not stream directly (sharing off or Drive blocked it).<br>" +
+    status.innerHTML = `<b>${VERSION}</b> — all sources failed: ${errors.join(", ")}<br>` +
       `Open in <a href="https://drive.google.com/file/d/${encodeURIComponent(id)}/view" target="_blank">Google Drive</a>` +
       ` and seek to <b>${fmt(t)}</b> manually.`;
   });
+  document.getElementById("status").textContent = `${VERSION} — loading…`;
 })();
 </script>
 </body>
